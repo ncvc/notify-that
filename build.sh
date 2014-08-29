@@ -1,1 +1,1 @@
-pyinstaller -F notify.py
+pyinstaller -F notify-that.py
