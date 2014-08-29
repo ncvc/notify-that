@@ -49,16 +49,27 @@ def notifyEmail(emailAddress, subject, messageStr):
 	s.sendmail(EMAIL_FROM_ADDRESS, [emailAddress], msg.as_string())
 	s.quit()
 
-def fromPipe():
+def fromPipe(notificationMethod):
 	lines = []
 	for line in sys.stdin:
 		sys.stdout.write(line)
 		lines.append(line)
 
-	return notifyYo('madcow')
-	# notifyText('4108070375', 'Done!')
-	# notifyEmail('nvcarski@gmail.com', 'subj', ''.join(lines))
+	if notificationMethod == 'yo':
+		notifyYo('madcow')
+	elif notificationMethod == 'text':
+		notifyText('4108070375', 'Done!')
+	elif notificationMethod == 'email':
+		notifyEmail('nvcarski@gmail.com', 'Notify that!', ''.join(lines))
+	else:
+		# Default
+		notifyYo('madcow')
 
 
 if __name__ == '__main__':
-	fromPipe()
+	try:
+		notificationMethod = sys.argv[1].lower()
+	except IndexError:
+		notificationMethod = None
+
+	fromPipe(notificationMethod)
