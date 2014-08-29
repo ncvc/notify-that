@@ -10,10 +10,12 @@ from email.mime.text import MIMEText
 
 from twilio.rest import TwilioRestClient
 
-from config import YO_API_KEY, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_NUMBER, EMAIL_LOGIN_USER, EMAIL_LOGIN_PASSWORD, EMAIL_SMTP_SERVER, EMAIL_SMTP_PORT
+from config import YO_API_KEY
+from config import TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_NUMBER
+from config import EMAIL_LOGIN_USER, EMAIL_LOGIN_PASSWORD, EMAIL_SMTP_SERVER, EMAIL_SMTP_PORT
 
 
-YO_URL = 'https://api.justyo.co/yo/'
+YO_API_URL = 'https://api.justyo.co/yo/'
 
 EMAIL_FROM_ADDRESS = 'ncvc@mit.edu'
 
@@ -23,9 +25,9 @@ def notifyYo(username):
 	encodedArgs = urllib.urlencode(args)
 
 	try:
-		responseCode = urllib2.urlopen(YO_URL, encodedArgs).getcode()
+		responseCode = urllib2.urlopen(YO_API_URL, encodedArgs).getcode()
 	except urllib2.HTTPError:
-		# Probably rate-limited, Yo limits you to 1 Yo per minute
+		# We were probably rate-limited, Yo limits you to 1 Yo per minute
 		return False
 
 	return responseCode == httplib.OK
