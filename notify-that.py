@@ -5,6 +5,8 @@ import urllib2
 import smtplib
 import sys
 import httplib
+import subprocess
+import argparse
 
 from email.mime.text import MIMEText
 
@@ -49,11 +51,25 @@ def notifyEmail(emailAddress, subject, messageStr):
 	s.sendmail(EMAIL_FROM_ADDRESS, [emailAddress], msg.as_string())
 	s.quit()
 
-def fromPipe(notificationMethod):
+# Opens a subprocess so it can get the program's output in realtime
+def openSubprocess(cmd, notificationMethod=None):
 	lines = []
-	for line in sys.stdin:
-		sys.stdout.write(line)
+
+	p = subprocess.Popen(['stdbuf', '-oL'] + cmd, stdout=subprocess.PIPE)
+	
+	# Grab stdout line by line as it becomes available.  This will loop until p terminates.
+	while p.poll() is None:
+		line = p.stdout.readline()  # This blocks until it receives a newline.
 		lines.append(line)
+		sys.stdout.write(line)
+	# When the subprocess terminates there might be unconsumed output that still needs to be processed.
+	line = p.stdout.read()
+	lines.append(line)
+	sys.stdout.write(line)
+
+	p.stdout.close()
+
+	print 'Notifying you...'
 
 	if notificationMethod == 'yo':
 		notifyYo('madcow')
@@ -67,9 +83,9 @@ def fromPipe(notificationMethod):
 
 
 if __name__ == '__main__':
-	try:
-		notificationMethod = sys.argv[1].lower()
-	except IndexError:
-		notificationMethod = None
+	# try:
+	# 	notificationMethod = sys.argv[1].lower()
+	# except IndexError:
+	# 	notificationMethod = None
 
-	fromPipe(notificationMethod)
+	openSubprocess(sys.argv[1:])

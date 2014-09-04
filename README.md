@@ -17,4 +17,4 @@ Simple notification system for when your batch jobs are done.
 ## Usage
 notify-that will send you a yo/text/email when your scripts are finished. It also sends the output of your scripts if you choose to send via email.
 
-	$ ./some_long_running_script | notify-that <yo|text|email>
+	$ notify-that ./some_long_running_script
