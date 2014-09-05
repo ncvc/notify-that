@@ -17,6 +17,9 @@ from config import TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_NUMBER
 from config import EMAIL_LOGIN_USER, EMAIL_LOGIN_PASSWORD, EMAIL_SMTP_SERVER, EMAIL_SMTP_PORT
 
 
+DEFAULT_NOTIFICATION_METHOD = 'yo'
+
+
 YO_API_URL = 'https://api.justyo.co/yo/'
 
 EMAIL_FROM_ADDRESS = 'ncvc@mit.edu'
@@ -52,7 +55,7 @@ def notifyEmail(emailAddress, subject, messageStr):
 	s.quit()
 
 # Opens a subprocess so it can get the program's output in realtime
-def openSubprocess(cmd, notificationMethod=None):
+def openSubprocess(cmd, notificationMethod=DEFAULT_NOTIFICATION_METHOD):
 	lines = []
 
 	p = subprocess.Popen(['stdbuf', '-oL'] + cmd, stdout=subprocess.PIPE)
@@ -78,14 +81,20 @@ def openSubprocess(cmd, notificationMethod=None):
 	elif notificationMethod == 'email':
 		notifyEmail('nvcarski@gmail.com', 'Notify that!', ''.join(lines))
 	else:
-		# Default
+		# Fallback
 		notifyYo('madcow')
 
 
 if __name__ == '__main__':
-	# try:
-	# 	notificationMethod = sys.argv[1].lower()
-	# except IndexError:
-	# 	notificationMethod = None
+	# Set up the command line parser
+	parser = argparse.ArgumentParser(description='Run COMMAND and notify you on termination via Yo, text, or email.')
+	parser.add_argument('-m', action='store', dest='notification_method', nargs=1, default=[DEFAULT_NOTIFICATION_METHOD],
+	                    help='Set environment')
+	parser.add_argument('command', nargs=argparse.REMAINDER, help='Command to run')
 
-	openSubprocess(sys.argv[1:])
+	args = parser.parse_args()
+
+	notificationMethod = args.notification_method[0]
+	command = args.command
+
+	openSubprocess(command, notificationMethod)
