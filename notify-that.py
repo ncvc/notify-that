@@ -61,10 +61,15 @@ def openSubprocess(cmd, notificationMethod=DEFAULT_NOTIFICATION_METHOD):
 	p = subprocess.Popen(['stdbuf', '-oL'] + cmd, stdout=subprocess.PIPE)
 	
 	# Grab stdout line by line as it becomes available.  This will loop until p terminates.
-	while p.poll() is None:
-		line = p.stdout.readline()  # This blocks until it receives a newline.
-		lines.append(line)
-		sys.stdout.write(line)
+	try:
+		while p.poll() is None:
+			line = p.stdout.readline()  # This blocks until it receives a newline.
+			lines.append(line)
+			sys.stdout.write(line)
+	except KeyboardInterrupt:
+		# Suppress raising an exception on ctrl+c (but not in the subprocess)
+		return
+
 	# When the subprocess terminates there might be unconsumed output that still needs to be processed.
 	line = p.stdout.read()
 	lines.append(line)
