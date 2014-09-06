@@ -1,6 +1,7 @@
 PyInstaller==2.1
 argparse==1.2.1
 httplib2==0.9
+pastebin-python==1.2
 six==1.7.3
 twilio==3.6.7
 wsgiref==0.1.2

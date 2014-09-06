@@ -15,6 +15,9 @@ from twilio.rest import TwilioRestClient
 from config import YO_API_KEY
 from config import TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_NUMBER
 from config import EMAIL_LOGIN_USER, EMAIL_LOGIN_PASSWORD, EMAIL_SMTP_SERVER, EMAIL_SMTP_PORT
+from config import PASTEBIN_API_KEY
+
+from pastebin_python.pastebin import PastebinPython
 
 
 DEFAULT_NOTIFICATION_METHOD = 'yo'
@@ -54,14 +57,20 @@ def notifyEmail(emailAddress, subject, messageStr):
 	s.sendmail(EMAIL_FROM_ADDRESS, [emailAddress], msg.as_string())
 	s.quit()
 
+# Post text to pastebin and return the url
+def pasteToPasteBin(text, name='Notify-that output'):
+	pasteBin = PastebinPython(api_dev_key=PASTEBIN_API_KEY)
+	return pasteBin.createPaste(text, api_paste_name=name)
+
+
 # Opens a subprocess so it can get the program's output in realtime
-def openSubprocess(cmd, notificationMethod=DEFAULT_NOTIFICATION_METHOD):
+def openSubprocess(cmd, notificationMethod=DEFAULT_NOTIFICATION_METHOD, pasteToPastebin=True):
 	lines = []
 
 	p = subprocess.Popen(['stdbuf', '-oL'] + cmd, stdout=subprocess.PIPE)
 	
-	# Grab stdout line by line as it becomes available.  This will loop until p terminates.
 	try:
+		# Grab stdout line by line as it becomes available.  This will loop until p terminates.
 		while p.poll() is None:
 			line = p.stdout.readline()  # This blocks until it receives a newline.
 			lines.append(line)
@@ -82,9 +91,19 @@ def openSubprocess(cmd, notificationMethod=DEFAULT_NOTIFICATION_METHOD):
 	if notificationMethod == 'yo':
 		notifyYo('madcow')
 	elif notificationMethod == 'text':
-		notifyText('4108070375', 'Done!')
+		if pasteToPastebin:
+			pastebinURL = pasteToPasteBin(''.join(lines))
+			text = 'Notify-that! View script\'s output here: %s' % pastebinURL
+		else:
+			text = 'Notify-that!'
+		notifyText('4108070375', text)
 	elif notificationMethod == 'email':
-		notifyEmail('nvcarski@gmail.com', 'Notify that!', ''.join(lines))
+		if pasteToPastebin:
+			pastebinURL = pasteToPasteBin(''.join(lines))
+			text = 'Check out your script\'s output here: %s' % pastebinURL
+		else:
+			text = 'Script finished!'
+		notifyEmail('nvcarski@gmail.com', 'Notify that!', text)
 	else:
 		# Fallback
 		notifyYo('madcow')
